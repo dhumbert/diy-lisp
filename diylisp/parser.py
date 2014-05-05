@@ -14,7 +14,28 @@ def parse(source):
     """Parse string representation of one *single* expression
     into the corresponding Abstract Syntax Tree."""
 
-    raise NotImplementedError("DIY")
+    source = remove_comments(source)
+    subexprs = split_exps(source)
+
+    for subexpr in subexprs:
+        if subexpr[0] == '#':
+            return True if subexpr[1] == 't' else False
+        elif subexpr.isdigit():
+            return int(subexpr)
+        elif subexpr[0] == '(':
+            end = find_matching_paren(subexpr, 0)
+            if subexpr[1:end]:
+                elems = []
+                for elem in split_exps(subexpr[1:end]):
+                    elems.append(parse(elem))
+                return elems
+            else:
+                return []
+        elif subexpr[0] == "'":  # quote expansion
+            return ['quote', parse(subexpr[1:])]
+        else:
+            return subexpr
+
 
 ##
 ## Below are a few useful utility functions. These should come in handy when 
@@ -74,7 +95,10 @@ def first_expression(source):
         return source[:last + 1], source[last + 1:]
     else:
         match = re.match(r"^[^\s)']+", source)
-        end = match.end()
+        try:
+            end = match.end()
+        except AttributeError:
+            raise LispError("Expected EOF")
         atom = source[:end]
         return atom, source[end:]
 
