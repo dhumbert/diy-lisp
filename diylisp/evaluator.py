@@ -27,6 +27,16 @@ def evaluate(ast, env):
             return params[0]
         elif f == 'atom':
             return is_atom(evaluate(params[0], env))
+        elif f == 'if':
+            test = evaluate(params[0], env)
+            if not is_boolean(test):
+                raise LispError("First param to if must be boolean")
+
+            if test:
+                return evaluate(params[1], env)
+            else:
+                return evaluate(params[2], env)
+
         elif f in binary_forms:
             first = evaluate(params[0], env)
             second = evaluate(params[1], env)
@@ -36,7 +46,7 @@ def evaluate(ast, env):
             else:
                 if not is_integer(first) or not is_integer(second):
                     raise LispError("Operands to " + f + " must be integers")
-                
+
                 if f == '+':
                     return first + second
                 elif f == '-':
