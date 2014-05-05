@@ -14,6 +14,44 @@ making your work a bit easier. (We're supposed to get through this thing
 in a day, after all.)
 """
 
+binary_forms = ['eq', '+', '-', '*', '/', 'mod', '>', '<', '>=', '<=']
+
 def evaluate(ast, env):
     """Evaluate an Abstract Syntax Tree in the specified environment."""
-    raise NotImplementedError("DIY")
+    if is_boolean(ast) or is_integer(ast):
+        return ast
+    elif is_list(ast):
+        f = ast[0]
+        params = ast[1:]
+        if f == 'quote':
+            return params[0]
+        elif f == 'atom':
+            return is_atom(evaluate(params[0], env))
+        elif f in binary_forms:
+            first = evaluate(params[0], env)
+            second = evaluate(params[1], env)
+
+            if f == 'eq':   
+                return is_atom(first) and is_atom(second) and first == second
+            else:
+                if not is_integer(first) or not is_integer(second):
+                    raise LispError("Operands to " + f + " must be integers")
+                
+                if f == '+':
+                    return first + second
+                elif f == '-':
+                    return first - second
+                elif f == '/':
+                    return first / second
+                elif f == '*':
+                    return first * second
+                elif f == 'mod':
+                    return first % second
+                elif f == '>':
+                    return first > second
+                elif f == '<':
+                    return first < second
+                elif f == '<=':
+                    return first <= second
+                elif f == '>=':
+                    return first >= second
