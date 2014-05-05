@@ -20,6 +20,8 @@ def evaluate(ast, env):
     """Evaluate an Abstract Syntax Tree in the specified environment."""
     if is_boolean(ast) or is_integer(ast):
         return ast
+    elif is_symbol(ast):
+        return env.lookup(ast)
     elif is_list(ast):
         f = ast[0]
         params = ast[1:]
@@ -30,13 +32,18 @@ def evaluate(ast, env):
         elif f == 'if':
             test = evaluate(params[0], env)
             if not is_boolean(test):
-                raise LispError("First param to if must be boolean")
+                raise LispError("First argument to if must be boolean")
 
             if test:
                 return evaluate(params[1], env)
             else:
                 return evaluate(params[2], env)
-
+        elif f == 'define':
+            if len(params) != 2:
+                raise LispError("Wrong number of arguments")
+            elif not is_symbol(params[0]):
+                raise LispError("First argument to define is a non-symbol")
+            env.set(params[0], evaluate(params[1], env))
         elif f in binary_forms:
             first = evaluate(params[0], env)
             second = evaluate(params[1], env)
