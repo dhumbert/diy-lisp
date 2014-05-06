@@ -25,7 +25,11 @@ def evaluate(ast, env):
     elif is_list(ast):
         f = ast[0]
         params = ast[1:]
-        if f == 'quote':
+
+        if is_list(f):
+            c = evaluate(f, env)
+            return evaluate([c] + params, env)
+        elif f == 'quote':
             return params[0]
         elif f == 'atom':
             return is_atom(evaluate(params[0], env))
@@ -44,31 +48,35 @@ def evaluate(ast, env):
             elif not is_symbol(params[0]):
                 raise LispError("First argument to define is a non-symbol")
             env.set(params[0], evaluate(params[1], env))
-        elif f in binary_forms:
-            first = evaluate(params[0], env)
-            second = evaluate(params[1], env)
+        elif f == 'lambda':
+            if len(params) != 2:
+                raise LispError("Wrong number of arguments")
+            return Closure(env, params[0], params[1])
+        elif is_closure(f):
+            evaled_params = {}
+            for i, symbol in enumerate(f.params):
+                evaled_params[symbol] = evaluate(params[i], f.env)
+            
+            closure_env = f.env.extend(evaled_params)
 
-            if f == 'eq':   
-                return is_atom(first) and is_atom(second) and first == second
+            return evaluate(f.body, closure_env)
+        elif is_symbol(f):
+            evaled = evaluate(f, env)
+            evaled_params = []
+            for p in params:
+                evaled_params.append(evaluate(p, env))
+            
+            if callable(evaled):  # python function 
+                return evaled(*evaled_params)
+            elif is_closure(evaled):
+                expected_arg_length = len(evaled.params)
+                actual_arg_length = len(evaled_params)
+                if expected_arg_length != actual_arg_length:
+                    raise LispError("wrong number of arguments, expected " + str(expected_arg_length) + " got " + str(actual_arg_length))
+                return evaluate([evaled] + evaled_params, evaled.env)
             else:
-                if not is_integer(first) or not is_integer(second):
-                    raise LispError("Operands to " + f + " must be integers")
-
-                if f == '+':
-                    return first + second
-                elif f == '-':
-                    return first - second
-                elif f == '/':
-                    return first / second
-                elif f == '*':
-                    return first * second
-                elif f == 'mod':
-                    return first % second
-                elif f == '>':
-                    return first > second
-                elif f == '<':
-                    return first < second
-                elif f == '<=':
-                    return first <= second
-                elif f == '>=':
-                    return first >= second
+                raise LispError()
+        else:
+            raise LispError(str(ast) + "is not a function")
+    else:
+        raise LispError("xxx")
