@@ -53,6 +53,11 @@ def test_getting_tail_of_list():
 
     assert_equals([2, 3], evaluate(parse("(tail '(1 2 3))"), Environment()))
 
+def test_getting_tail_of_empty_list():
+    """If the list is empty tail should return an empty list"""
+
+    assert_equals([], evaluate(parse("(tail (quote ()))"), Environment()))
+
 def test_checking_whether_list_is_empty():
     """The `empty` form checks whether or not a list is empty."""
 

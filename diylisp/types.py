@@ -35,6 +35,13 @@ def _arithmetic_function(op, *args):
 
     return op(casted_args[0], casted_args[1])
 
+
+def _require_nonempty_list(fun, listArg):
+    if not listArg:
+        raise LispError(fun.__name__ + " requires a non-empty list")
+
+    return fun(listArg)
+
 class Environment:
 
     def __init__(self, variables=None):
@@ -53,11 +60,15 @@ class Environment:
             '>': operator.gt,
             '>=': operator.ge,
         }
-        
+
         for op, fun in arithmetic.iteritems():
             self.variables[op] = partial(_arithmetic_function, fun)
         
         self.variables['eq'] = lambda x, y: is_atom(x) and is_atom(y) and x == y
+        self.variables['cons'] = lambda x, y: [x] + y
+        self.variables['head'] = partial(_require_nonempty_list, lambda x: x[0])
+        self.variables['tail'] = lambda x: x[1:]
+        self.variables['empty'] = lambda x: len(x) == 0
 
     def lookup(self, symbol):
         if symbol in self.variables:
