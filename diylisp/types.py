@@ -25,6 +25,9 @@ class Closure:
         self.body = body
 
     def __str__(self):
+        return self.__repr__()
+
+    def __repr__(self):
         return "<closure/%d>" % len(self.params)
 
 def _arithmetic_function(op, *args):
@@ -86,3 +89,6 @@ class Environment:
             raise LispError("Symbol " + symbol + " was already defined")
 
         self.variables[symbol] = value
+
+    def __repr__(self):
+        return ', '.join(map(str, self.variables))

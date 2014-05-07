@@ -92,10 +92,6 @@ def test_filter():
     assert_equals("(2 4 6)", interpret("(filter even '(1 2 3 4 5 6))", env))
 
 def test_map():
-    interpret("""
-        (define inc
-            (lambda (x) (+ 1 x)))
-    """, env)
     assert_equals("(2 3 4)", interpret("(map inc '(1 2 3))", env))
 
 def test_reverse():

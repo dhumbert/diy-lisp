@@ -6,3 +6,93 @@
 
 ;; DIY -- Implement the rest of your standard library
 ;; here as part 7 of the workshop.
+
+(define or
+	(lambda (a b)
+		(if a #t (if b #t #f))))
+
+(define and
+	(lambda (a b)
+		(if a (if b #t #f) #f)))
+
+(define xor
+	(lambda (a b)
+		(if a (if b #f #t) (if b #t #f))))
+
+(define sum
+	(lambda (a)
+		(if (empty a)
+			0
+			(+ (head a) (sum (tail a))))))
+
+(define length
+	(lambda (a)
+		(if (empty a)
+			0
+			(+ 1 (length (tail a))))))
+
+(define append
+	(lambda (a b)
+		(if (empty a)
+			b
+			(cons (head a) (append (tail a) b)))))
+
+(define filter
+	(lambda (f a)
+		(if (empty a)
+			'()
+			(if (f (head a))
+				(cons (head a) (filter f (tail a)))
+				(filter f (tail a))))))
+
+(define map
+	(lambda (f a)
+		(if (empty a)
+			'()
+			(cons (f (head a)) (map f (tail a))))))
+
+(define reverse
+	(lambda (a)
+		(if (empty a)
+			'()
+			(if (eq 1 (length a))
+				a
+				(append (reverse (tail a)) (list (head a)))))))
+
+(define gcd
+	(lambda (m n)
+		(if (> m n)
+			(gcd n m)
+			(if (eq 0 (mod n m))
+				m
+				(gcd (mod n m) m)))))
+
+(define dec
+	(lambda (a)
+		(- a 1)))
+
+(define inc
+	(lambda (a)
+		(+ a 1)))
+
+(define range
+	(lambda (a b)
+		(if (eq a (inc b))
+			'()
+			(cons a (range (inc a) b)))))
+
+(define list
+	(lambda (a)
+		(cons a '())))
+
+(define partition
+	(lambda (op pivot ls)
+		(filter (lambda (e) (op e pivot)) ls)))
+
+(define sort
+	(lambda (a)
+		(if (empty a)
+			'()
+			(append (sort (partition < (head a) (tail a)))
+					(append (list (head a))
+						(sort (partition > (head a) (tail a))))))))

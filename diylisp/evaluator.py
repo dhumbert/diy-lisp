@@ -55,25 +55,24 @@ def evaluate(ast, env):
         elif is_closure(f):
             evaled_params = {}
             for i, symbol in enumerate(f.params):
-                evaled_params[symbol] = evaluate(params[i], f.env)
-            
-            closure_env = f.env.extend(evaled_params)
+                evaled_params[symbol] = evaluate(params[i], env)
 
-            return evaluate(f.body, closure_env)
+            return evaluate(f.body, f.env.extend(evaled_params))
         elif is_symbol(f):
             evaled = evaluate(f, env)
-            evaled_params = []
-            for p in params:
-                evaled_params.append(evaluate(p, env))
             
             if callable(evaled):  # python function 
+                evaled_params = []
+                for p in params:
+                    evaled_params.append(evaluate(p, env))
                 return evaled(*evaled_params)
             elif is_closure(evaled):
                 expected_arg_length = len(evaled.params)
-                actual_arg_length = len(evaled_params)
+                actual_arg_length = len(params)
                 if expected_arg_length != actual_arg_length:
                     raise LispError("wrong number of arguments, expected " + str(expected_arg_length) + " got " + str(actual_arg_length))
-                return evaluate([evaled] + evaled_params, evaled.env)
+
+                return evaluate([evaled] + params, env)
             else:
                 raise LispError()
         else:
